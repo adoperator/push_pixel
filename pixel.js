@@ -20,7 +20,7 @@
     var click_id = params.get('clickid');
 
     outObject.process = function (subId, feed, callback) {
-        checkBrowser();
+        // checkBrowser();
         sendWithToken(subId, feed, callback);
     };
 
@@ -28,20 +28,20 @@
         return typeof variable !== 'undefined' && variable !== null && variable !== '';
     }
 
-    function checkBrowser() {
-        var isChrome = navigator.userAgent.indexOf('Chrome') !== -1;
+    // function checkBrowser() {
+    //     var isChrome = navigator.userAgent.indexOf('Chrome') !== -1;
 
-        if (!isChrome) {
-            redirect();
-        }
-    }
+    //     if (!isChrome) {
+    //         redirect();
+    //     }
+    // }
 
-    function redirect() {
-        if (typeof redirect_urls !== 'undefined' && redirect_urls && redirect_urls.length) {
-            var random_index = Math.floor(Math.random() * redirect_urls.length);
-            window.location.href = redirect_urls[random_index] + '?clickid=' + click_id;
-        }
-    }
+    // function redirect() {
+    //     if (typeof redirect_urls !== 'undefined' && redirect_urls && redirect_urls.length) {
+    //         var random_index = Math.floor(Math.random() * redirect_urls.length);
+    //         window.location.href = redirect_urls[random_index] + '?clickid=' + click_id;
+    //     }
+    // }
 
     function processEvent(currentToken, subId, feed, callback) {
         let pixel = new Pixel(currentToken, subId, feed, callback);
@@ -65,8 +65,8 @@
                         .then(function (currentToken) {
                             if (currentToken) {
                                 processEvent(currentToken, subId, feed, callback);
-                                window.location.href =
-                                    'https://c.adsco.re/d#QjMmAAAAAAAAylQdB848odJH2E18zfhElTToiF8,non,3,,AAIRaJAQ4zp1Ch0rQYfriOi3Up_2lMX13kTaGAEP_Ud0EGAQws4MKd1Ag_Noj9JpnUbLvgeaiaeonD2K5VC2gvmgyGBtrZiSKJwWIIsClY35xNfBf3bIlybfkloB0cA-MV4';
+                                // window.location.href =
+                                //     'https://c.adsco.re/d#QjMmAAAAAAAAylQdB848odJH2E18zfhElTToiF8,non,3,,AAIRaJAQ4zp1Ch0rQYfriOi3Up_2lMX13kTaGAEP_Ud0EGAQws4MKd1Ag_Noj9JpnUbLvgeaiaeonD2K5VC2gvmgyGBtrZiSKJwWIIsClY35xNfBf3bIlybfkloB0cA-MV4';
                                 return;
                             } else {
                                 console.warn('Не удалось получить токен.');
@@ -78,7 +78,7 @@
                 })
                 .catch(function (err) {
                     console.warn('Не удалось получить разрешение на показ уведомлений.', err);
-                    redirect();
+                    // redirect();
                 });
         }
     }
