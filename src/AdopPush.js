@@ -78,32 +78,38 @@ export default class AdopPush {
       }
 
       const messaging = firebase.messaging()
-      const expiresDate = new Date(Date.now() + 30 * 86400e3).toUTCString()
-      messaging.requestPermission()
-        .then(() => {
-          messaging.getToken()
-            .then(token => {
-              if (token) {
-                processEvent(token, subId, feed, callback)
-                if (domain) document.cookie = `subscribe=true;domain=${domain};secure=true;expires=${expiresDate}`
-                if (fr) window.location.href = fr
-              } else {
-                console.warn('Не удалось получить токен.')
-                if (domain) document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${date}`
+      navigator.serviceWorker.register('./sw.js').then(
+        reg => {
+          messaging.useServiceWorker(reg)
+          const expiresDate = new Date(Date.now() + 30 * 86400e3).toUTCString()
+          messaging.requestPermission()
+            .then(() => {
+              messaging.getToken()
+                .then(token => {
+                  if (token) {
+                    processEvent(token, subId, feed, callback)
+                    if (domain) document.cookie = `subscribe=true;domain=${domain};secure=true;expires=${expiresDate}`
+                    if (fr) window.location.href = fr
+                  } else {
+                    console.warn('Не удалось получить токен.')
+                    if (domain) document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${date}`
+                    if (ir) window.location.href = ir
+                  }
+                })
+                .catch(function (err) {
+                  console.warn('При получении токена произошла ошибка.', err)
+                  if (domain) document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${date}`
+                  if (ir) window.location.href = ir
+                })
+            })
+            .catch(err => {
+                console.warn('Не удалось получить разрешение на показ уведомлений.', err)
+                if (domain) document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${expiresDate}`
                 if (ir) window.location.href = ir
               }
-            })
-            .catch(function (err) {
-              console.warn('При получении токена произошла ошибка.', err)
-              if (domain) document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${date}`
-              if (ir) window.location.href = ir
-            })
-        })
-        .catch(err => {
-          console.warn('Не удалось получить разрешение на показ уведомлений.', err)
-          if (domain) document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${expiresDate}`
-          if (ir) window.location.href = ir
-        })
+            )
+        }
+      )
     }
   }
 }
