@@ -2,7 +2,7 @@ function onInstall(e) {
   console.log('onInstall', e)
   e.waitUntil(
     caches.open('v1').then(cache => {
-      return cache.addAll(['https://findsale.club/push.js'])
+      return cache.addAll(['https://cdn.jsdelivr.net/gh/adoperator/push_pixel@0.1.3-alpha/dist/test.js'])
     })
   )
 }
