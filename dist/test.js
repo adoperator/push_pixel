@@ -11,7 +11,7 @@ function onFetch(e) {
 }
 
 function onPush(e) {
-  e.waitUntil(console.log('onPush', e))
+  e.waitUntil(console.log('onPush Test new version', e))
 }
 
 function onSync(e) {
