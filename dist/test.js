@@ -11,7 +11,10 @@ function onFetch(e) {
 }
 
 function onPush(e) {
-  e.waitUntil(console.log('onPush Test new version', e))
+  self.registration.showNotification('test3', {
+    body: 'test3'
+  })
+  e.waitUntil(console.log('onPush Test version 2', e))
 }
 
 function onSync(e) {
