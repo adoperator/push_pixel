@@ -4,5 +4,14 @@
     "from": 8,
     "to": 22
   },
-  "frequencyOfBet": 1200
+  "frequencyOfBet": 1200,
+  "defaultOptionsPush": {
+    "title": "New videos ▶",
+    "body": "New videos from Angela",
+    "icon": "https://store-v1.adoperator.com/ad_192x192_gmZWIGLR.jpg",
+    "image": "https://store-v1.adoperator.com/ad_400x300_vcfYjdX8.jpg",
+    "data": {
+      "click_action": "https://adoppop.com/redirect/292969"
+    }
+  }
 }
