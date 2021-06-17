@@ -84,57 +84,50 @@ export default class AdopPush {
   }
 
   sendWithToken(subId, feed, callback, ir, fr, domain, processEvent) {
-    if (firebase.apps.length === 0) {
-      firebase.initializeApp({
-        messagingSenderId: '1061424448485'
-      })
+    if (!('Notification' in window)) {
+      console.log('This browser does not support notification')
+      if (fr) _Utils.redirect(fr)
+      return
     }
 
-    if ('Notification' in window) {
-      if (_Utils.getCookie('subscribe') === 'true') {
-        if (fr) {
-          _Utils.redirect(fr)
-        }
-        return
-      }
+    if (Notification.permission === 'denied') {
+      console.log('This browser does not permission notification')
+      if (ir) _Utils.redirect(ir)
+      return
+    }
 
-      const messaging = firebase.messaging()
-      navigator.serviceWorker.register('./sw.js').then(reg => {
-        messaging.useServiceWorker(reg)
-        const expiresDate = new Date(Date.now() + 30 * 86400e3).toUTCString()
-        messaging
-          .requestPermission()
-          .then(() => {
-            messaging
-              .getToken()
-              .then(token => {
-                if (token) {
-                  processEvent(token, subId, feed, callback)
-                  if (domain)
-                    document.cookie = `subscribe=true;domain=${domain};secure=true;expires=${expiresDate}`
-                  if (fr) _Utils.redirect(fr)
-                } else {
-                  console.warn('no token')
-                  if (domain)
-                    document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${expiresDate}`
-                  if (ir) _Utils.redirect(ir)
-                }
-              })
-              .catch(function (err) {
-                console.warn(3, err)
-                if (domain)
-                  document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${expiresDate}`
+    firebase.initializeApp({
+      messagingSenderId: '1061424448485'
+    })
+
+    const messaging = firebase.messaging()
+
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      messaging.useServiceWorker(reg)
+      messaging
+        .requestPermission()
+        .then(() => {
+          messaging
+            .getToken()
+            .then(token => {
+              if (token) {
+                processEvent(token, subId, feed, callback)
+                if (fr) _Utils.redirect(fr)
+              } else {
+                console.warn('no token')
                 if (ir) _Utils.redirect(ir)
-              })
-          })
-          .catch(err => {
-            console.warn(2, err)
-            if (domain)
-              document.cookie = `subscribe=false;domain=${domain};secure=true;expires=${expiresDate}`
-            if (ir) _Utils.redirect(ir)
-          })
-      })
-    }
+              }
+            })
+            .catch(function (err) {
+              console.warn(3, err)
+              if (ir) _Utils.redirect(ir)
+            })
+        })
+        .catch(err => {
+          console.warn(2, err)
+          if (ir) _Utils.redirect(ir)
+        })
+    })
   }
 }
 
@@ -160,13 +153,11 @@ const _Utils = {
       s4()
     )
   },
+  redirect(url) {
+    window.location.replace(url)
+  },
   isSet(value) {
     return typeof value !== 'undefined' && value !== null && value !== ''
-  },
-  redirect(url) {
-    setTimeout(() => {
-      window.location.href = url
-    }, 100)
   },
   setCookie(name, v, minutes) {
     let expires = ''
@@ -177,7 +168,7 @@ const _Utils = {
     }
     document.cookie = name + '=' + v + expires + '; path=/'
   },
-  getCookie(name) {
+  getCookie(name, defaultValue = undefined) {
     let matches = document.cookie.match(
       new RegExp(
         '(?:^|; )' +
@@ -185,7 +176,7 @@ const _Utils = {
           '=([^;]*)'
       )
     )
-    return matches ? decodeURIComponent(matches[1]) : undefined
+    return matches ? decodeURIComponent(matches[1]) : defaultValue
   }
 }
 
@@ -244,13 +235,12 @@ class _Pixel {
     }
   }
 
-  setUid(remove = false) {
-    if (remove) _Utils.setCookie('uid', '', -100)
-    else if (_Utils.isSet(_Utils.getCookie('uid'))) {
-      _Utils.setCookie('uid', _Utils.getCookie('uid'), 2 * 365 * 24 * 60)
-    } else {
-      _Utils.setCookie('uid', _Utils.guid(), 2 * 365 * 24 * 60)
-    }
+  setUid() {
+    _Utils.setCookie(
+      'uid',
+      _Utils.getCookie('uid', _Utils.guid()),
+      2 * 365 * 24 * 60
+    )
   }
 
   getAttributes() {
