@@ -1,9 +1,4 @@
 {
-  "frequencyOfNotifications": 28800,
-  "intervalOfNotifications": {
-    "from": 8,
-    "to": 22
-  },
   "frequencyOfBet": 1200,
   "defaultPush": [
     {

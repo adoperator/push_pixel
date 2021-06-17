@@ -7,11 +7,6 @@ var KEYS = {
 var idb=function(d){'use strict';function h(d){return new Promise(function(a,b){d.oncomplete=d.onsuccess=function(){return a(d.result)},d.onabort=d.onerror=function(){return b(d.error)}})}function a(b,f){var a=indexedDB.open(b);a.onupgradeneeded=function(){var b=a.result;if(!b.objectStoreNames.contains(f)){var c=b.createObjectStore(f);return c.add(0,KEYS.BET),c.add(0,KEYS.SHOW),c.add(0,KEYS.CLICK),c}};var c=h(a);return function(a,b){return c.then(function(d){return b(d.transaction(f,a).objectStore(f))})}}function f(){return b||(b=a("resources","push")),b}var b;return d.createStore=a,d.get=function(b){return f("readonly",function(c){return h(c.get(b))})},d.promisifyRequest=h,d.set=function(d,a){return f("readwrite",function(b){return b.put(a,d),h(b.transaction)})},d}({});
 
 var DEFAULT_CONFIG = {
-  frequencyOfNotifications: 28800,
-  intervalOfNotifications: {
-    from: 8,
-    to: 22
-  },
   frequencyOfBet: 1200, // 60 * 60
   defaultPush: [
     {
@@ -62,7 +57,7 @@ function defaultPush_() {
   return self.registration.showNotification(push.title, push)
 }
 
-async function canShowNotification_() {
+async function canBidRequest_() {
   const response = await fetch(
     'https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/config.json'
   )
@@ -71,29 +66,14 @@ async function canShowNotification_() {
     DEFAULT_CONFIG = await response.json()
   }
 
-  const config = DEFAULT_CONFIG
-  const storeLastShow = await idb.get(KEYS.SHOW)
   const storeLastBet = await idb.get(KEYS.BET)
 
-  if (Date.now() - storeLastBet < config.frequencyOfBet * 1000) {
-    return false
-  }
-
-  const date = new Date(Date.now())
-  const hs = date.getHours()
-
-  const canShowByWorkTime =
-    hs >= config.intervalOfNotifications.from &&
-    hs <= config.intervalOfNotifications.to
-  const canShowByLastShow =
-    Date.now() - storeLastShow > config.frequencyOfNotifications * 1000
-
-  return canShowByWorkTime && canShowByLastShow
+  return Date.now() - storeLastBet > DEFAULT_CONFIG.frequencyOfBet * 1000
 }
 
 async function onPush_(event) {
-  const canShowNotification = await canShowNotification_()
-  if (!canShowNotification) {
+  const canBidRequest = await canBidRequest_()
+  if (!canBidRequest) {
     return defaultPush_()
   }
   const push = event.data.json()
