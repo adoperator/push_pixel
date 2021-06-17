@@ -13,10 +13,12 @@ var DEFAULT_CONFIG = {
     to: 22
   },
   frequencyOfBet: 1200, // 60 * 60
-  defaultOptionsPush: {
-    title: '',
-    body: '',
-  }
+  defaultPush: [
+    {
+      title: '',
+      body: ''
+    }
+  ]
 }
 
 self.addEventListener('push', event => {
@@ -49,11 +51,15 @@ self.addEventListener('notificationclick', function (event) {
   )
 })
 
+function getDefaultPush_() {
+  return DEFAULT_CONFIG.defaultPush[
+    Math.floor(Math.random() * DEFAULT_CONFIG.defaultPush.length)
+  ]
+}
+
 function defaultPush_() {
-  return self.registration.showNotification(
-    DEFAULT_CONFIG.defaultOptionsPush.title,
-    DEFAULT_CONFIG.defaultOptionsPush
-  )
+  const push = getDefaultPush_()
+  return self.registration.showNotification(push.title, push)
 }
 
 async function canShowNotification_() {

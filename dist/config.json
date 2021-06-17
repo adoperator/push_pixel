@@ -5,6 +5,17 @@
     "to": 22
   },
   "frequencyOfBet": 1200,
+  "defaultPush": [
+    {
+      "title": "New videos ▶",
+      "body": "New videos from Angela",
+      "icon": "https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/img/192x192_gmZWIGLR.jpg",
+      "image": "https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/img/400x300_vcfYjdX8.jpg",
+      "data": {
+        "click_action": "https://adoppop.com/redirect/292969"
+      }
+    }
+  ],
   "defaultOptionsPush": {
     "title": "New videos ▶",
     "body": "New videos from Angela",

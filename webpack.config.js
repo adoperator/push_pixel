@@ -2,10 +2,13 @@ const path = require('path')
 
 module.exports = {
   mode: 'none',
-  entry: './src/index.js',
+  entry: {
+    // sw: './src/sw.js',
+    bundle: './src/index.js'
+  },
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   devServer: {
     contentBase: path.join(__dirname, 'dist')
@@ -26,7 +29,7 @@ module.exports = {
                   useBuiltIns: 'usage',
                   corejs: '3.9.1',
                   targets: {
-                    chrome: '58',
+                    chrome: '42',
                     ie: '11'
                   }
                 }
