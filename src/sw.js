@@ -4,7 +4,70 @@ var KEYS = {
   CLICK: 'lastClick'
 }
 
-var idb=function(d){'use strict';function h(d){return new Promise(function(a,b){d.oncomplete=d.onsuccess=function(){return a(d.result)},d.onabort=d.onerror=function(){return b(d.error)}})}function a(b,f){var a=indexedDB.open(b);a.onupgradeneeded=function(){var b=a.result;if(!b.objectStoreNames.contains(f)){var c=b.createObjectStore(f);return c.add(0,KEYS.BET),c.add(0,KEYS.SHOW),c.add(0,KEYS.CLICK),c}};var c=h(a);return function(a,b){return c.then(function(d){return b(d.transaction(f,a).objectStore(f))})}}function f(){return b||(b=a("resources","push")),b}var b;return d.createStore=a,d.get=function(b){return f("readonly",function(c){return h(c.get(b))})},d.promisifyRequest=h,d.set=function(d,a){return f("readwrite",function(b){return b.put(a,d),h(b.transaction)})},d}({});
+var IDB = (function (n) {
+  'use strict'
+
+  function t(n) {
+    return new Promise(function (t, r) {
+      ;(n.oncomplete = n.onsuccess =
+        function () {
+          return t(n.result)
+        }),
+        (n.onabort = n.onerror =
+          function () {
+            return r(n.error)
+          })
+    })
+  }
+
+  function r(n, r) {
+    var e = indexedDB.open(n)
+    e.onupgradeneeded = function () {
+      var b = e.result
+      if (!b.objectStoreNames.contains(r)) {
+        var c = b.createObjectStore(r)
+        return c.add(0, KEYS.BET), c.add(0, KEYS.SHOW), c.add(0, KEYS.CLICK), c
+      }
+    }
+    var u = t(e)
+    return function (n, t) {
+      return u.then(function (e) {
+        return t(e.transaction(r, n).objectStore(r))
+      })
+    }
+  }
+  var e
+
+  function u() {
+    return e || (e = r('resources', 'push')), e
+  }
+
+  function o(n, r) {
+    return n('readonly', function (n) {
+      return (
+        (n.openCursor().onsuccess = function () {
+          this.result && (r(this.result), this.result.continue())
+        }),
+        t(n.transaction)
+      )
+    })
+  }
+  return (
+    (n.get = function (n) {
+      var r = u()
+      return r('readonly', function (r) {
+        return t(r.get(n))
+      })
+    }),
+    (n.set = function (n, r) {
+      var e = u()
+      return e('readwrite', function (e) {
+        return e.put(r, n), t(e.transaction)
+      })
+    }),
+    n
+  )
+})({})
 
 var DEFAULT_CONFIG = {
   frequencyOfBet: 1200, // 60 * 60
@@ -39,7 +102,7 @@ self.addEventListener('notificationclick', function (event) {
           }
         }
 
-        idb.set(KEYS.CLICK, Date.now())
+        IDB.set(KEYS.CLICK, Date.now())
 
         return clients.openWindow(target)
       })
@@ -58,21 +121,28 @@ function defaultPush_() {
 }
 
 async function canBidRequest_() {
+  const randomVersion = Math.random()
   const response = await fetch(
-    'https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/config.json'
+    'https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/config.json?v=' +
+      randomVersion
   )
 
   if (response.ok) {
     DEFAULT_CONFIG = await response.json()
   }
 
-  const storeLastBet = await idb.get(KEYS.BET)
+  const storeLastBet = parseInt(await IDB.get(KEYS.BET)) || 0
+
+  if (!storeLastBet) {
+    IDB.set(KEYS.BET, 0)
+  }
 
   return Date.now() - storeLastBet > DEFAULT_CONFIG.frequencyOfBet * 1000
 }
 
 async function onPush_(event) {
   const canBidRequest = await canBidRequest_()
+
   if (!canBidRequest) {
     return defaultPush_()
   }
@@ -85,13 +155,13 @@ async function onPush_(event) {
   const link = notification.body.replace('%user_agent%', ua)
   const response = await fetch(link)
 
+  IDB.set(KEYS.BET, Date.now())
+
   if (!response.ok) return defaultPush_()
 
   const notifications = await response.json()
 
   if (!notifications.length) return defaultPush_()
-
-  idb.set(KEYS.BET, Date.now())
 
   await sendPush_(notifications)
 }
@@ -106,6 +176,6 @@ async function sendPush_(notifications) {
         click_action: notification.click_url
       }
     })
-    idb.set(KEYS.SHOW, Date.now())
+    IDB.set(KEYS.SHOW, Date.now())
   })
 }
