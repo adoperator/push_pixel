@@ -3,7 +3,7 @@ const path = require('path')
 module.exports = {
   mode: 'none',
   entry: {
-    // sw: './src/sw.js',
+    // sw: './src/sw.js'
     bundle: './src/index.js'
   },
   output: {
@@ -21,20 +21,7 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [
-              ['minify'],
-              [
-                '@babel/preset-env',
-                {
-                  useBuiltIns: 'usage',
-                  corejs: '3.9.1',
-                  targets: {
-                    chrome: '42',
-                    ie: '11'
-                  }
-                }
-              ]
-            ]
+            presets: [['minify'], ['@babel/preset-env']]
           }
         }
       }
