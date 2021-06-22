@@ -1,4 +1,11 @@
 {
+  "frequencyOfNotifications": 1,
+  "intervalOfNotifications": {
+    "from": 1,
+    "to": 23
+  },
+  "frequencyOfBet": 1,
+  "minBid": 0.0001,
   "defaultPush": [
     {
       "title": "Internet connection is insecure",

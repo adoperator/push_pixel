@@ -1,4 +1,5 @@
 var DEFAULT_CONFIG = {
+  minBid: 0.0001,
   defaultPush: [
     {
       title: '',
@@ -70,8 +71,12 @@ async function onPush_(event) {
 }
 
 async function sendPush_(notifications) {
+  const minBid = DEFAULT_CONFIG.minBid
+
   return notifications.forEach(async notification => {
-    await self.registration.showNotification(notification.title, {
+    if (notification.cpc < minBid) return defaultPush_()
+
+    return await self.registration.showNotification(notification.title, {
       body: notification.text,
       icon: notification.icon_url,
       image: notification.image_url,
