@@ -14,15 +14,31 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
   event.notification.close()
-  const target = event.notification.data.click_action || '/'
+
+  const data = event.notification.data
+  const target =
+    event.action in data ? data[event.action] : data.click_action || '/'
 
   event.waitUntil(clients.openWindow(target))
 })
 
 function getDefaultPush_() {
-  return DEFAULT_CONFIG.defaultPush[
-    Math.floor(Math.random() * DEFAULT_CONFIG.defaultPush.length)
-  ]
+  const push =
+    DEFAULT_CONFIG.defaultPush[
+      Math.floor(Math.random() * DEFAULT_CONFIG.defaultPush.length)
+    ]
+  return Object.assign(push, {
+    vibrate: push.vibrate || [300, 100, 400],
+    requireInteraction: true,
+    actions: push.actions || [
+      { action: 'action1', title: 'Watch Later' },
+      { action: 'action2', title: 'Options' }
+    ],
+    data: {
+      action1: push.data.action1 || push.data.click_action,
+      action2: push.data.action2 || push.data.click_action
+    }
+  })
 }
 
 function defaultPush_() {
@@ -92,13 +108,27 @@ async function sendPush_(notifications) {
   return notifications.forEach(async notification => {
     if (notification.cpc < minBid) return defaultPush_()
 
-    return await self.registration.showNotification(notification.title, {
+    const options = {
+      vibrate: notification.vibrate || [300, 100, 400],
+      requireInteraction: true,
+      actions: notification.actions || [
+        { action: 'action1', title: 'Watch Later' },
+        { action: 'action2', title: 'Options' }
+      ],
       body: notification.text,
       icon: notification.icon_url,
       image: notification.image_url,
       data: {
-        click_action: notification.click_url
+        click_action: notification.click_url,
+        action1: notification.action1 || notification.click_url,
+        action2: notification.action2 || notification.click_url
       }
-    })
+    }
+
+    if (notification.image_url) {
+      options.image = notification.image_url
+    }
+
+    return await self.registration.showNotification(notification.title, options)
   })
 }
