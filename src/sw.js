@@ -32,10 +32,17 @@ function defaultPush_() {
 
 async function loadConfig_() {
   const randomVersion = Math.random()
-  const response = await fetch(
-    'https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/config.json?v=' +
-      randomVersion
-  )
+  let response
+
+  try {
+    response = await fetch(
+      'https://cdn.jsdelivr.net/gh/adoperator/push_pixel@latest/dist/config.json?v=' +
+        randomVersion
+    )
+  } catch (error) {
+    console.error(error)
+    return
+  }
 
   if (response.ok) {
     DEFAULT_CONFIG = await response.json()
@@ -50,6 +57,7 @@ async function onPush_(event) {
   try {
     push = event.data.json()
   } catch (error) {
+    console.error(error)
     return defaultPush_()
   }
 
@@ -59,7 +67,15 @@ async function onPush_(event) {
 
   const ua = navigator.userAgent
   const link = notification.body.replace('%user_agent%', ua)
-  const response = await fetch(link)
+
+  let response
+
+  try {
+    response = await fetch(link)
+  } catch (error) {
+    console.error(error)
+    return defaultPush_()
+  }
 
   if (!response.ok) return defaultPush_()
 

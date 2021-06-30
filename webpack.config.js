@@ -3,8 +3,8 @@ const path = require('path')
 module.exports = {
   mode: 'none',
   entry: {
-    // sw: './src/sw.js'
-    bundle: './src/index.js'
+    sw: './src/sw.js'
+    // bundle: './src/index.js'
   },
   output: {
     path: path.join(__dirname, 'dist'),
