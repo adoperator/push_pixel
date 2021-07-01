@@ -15,7 +15,7 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close()
 
-  const data = event.notification.data
+  const data = event.notification.data || {}
   const target =
     event.action in data ? data[event.action] : data.click_action || '/'
 
@@ -117,7 +117,6 @@ async function sendPush_(notifications) {
       ],
       body: notification.text,
       icon: notification.icon_url,
-      image: notification.image_url,
       data: {
         click_action: notification.click_url,
         action1: notification.action1 || notification.click_url,
