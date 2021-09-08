@@ -8,8 +8,12 @@ var DEFAULT_CONFIG = {
   ]
 }
 
+self.addEventListener('install', event => {
+  self.skipWaiting()
+})
+
 self.addEventListener('push', event => {
-  event.waitUntil(onPush_(event))
+  event.waitUntil(onPush(event))
 })
 
 self.addEventListener('notificationclick', event => {
@@ -22,7 +26,11 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil(clients.openWindow(target))
 })
 
-function getDefaultPush_() {
+self.addEventListener('pushsubscriptionchange', event => {
+  console.log("[Service Worker]: 'pushsubscriptionchange' event")
+})
+
+function getdefaultPush() {
   const push =
     DEFAULT_CONFIG.defaultPush[
       Math.floor(Math.random() * DEFAULT_CONFIG.defaultPush.length)
@@ -41,12 +49,12 @@ function getDefaultPush_() {
   })
 }
 
-function defaultPush_() {
-  const push = getDefaultPush_()
+function defaultPush() {
+  const push = getdefaultPush()
   return self.registration.showNotification(push.title, push)
 }
 
-async function loadConfig_() {
+async function loadConfig() {
   const randomVersion = Math.random()
   let response
 
@@ -65,8 +73,8 @@ async function loadConfig_() {
   }
 }
 
-async function onPush_(event) {
-  await loadConfig_()
+async function onPush(event) {
+  await loadConfig()
 
   let push
 
@@ -74,12 +82,12 @@ async function onPush_(event) {
     push = event.data.json()
   } catch (error) {
     console.error(error)
-    return defaultPush_()
+    return defaultPush()
   }
 
   const notification = push.notification || {}
 
-  if (!notification.body) return defaultPush_()
+  if (!notification.body) return defaultPush()
 
   const ua = navigator.userAgent
   const link = notification.body.replace('%user_agent%', ua)
@@ -90,23 +98,28 @@ async function onPush_(event) {
     response = await fetch(link)
   } catch (error) {
     console.error(error)
-    return defaultPush_()
+    return defaultPush()
   }
 
-  if (!response.ok) return defaultPush_()
+  if (!response.ok) return defaultPush()
 
-  const notifications = await response.json()
+  let notifications
 
-  if (!notifications.length) return defaultPush_()
+  try {
+    notifications = await response.json()
+  } catch (error) {
+    console.error(error)
+    return defaultPush()
+  }
 
-  return await sendPush_(notifications)
-}
+  if (!notifications.length) return defaultPush()
 
-async function sendPush_(notifications) {
-  const minBid = DEFAULT_CONFIG.minBid
+  const promises = []
 
-  return notifications.forEach(async notification => {
-    if (notification.cpc < minBid) return defaultPush_()
+  for (let i = 0; i < notifications.length; i++) {
+    const notification = notifications[i]
+
+    if (notification.cpc < DEFAULT_CONFIG.minBid) return defaultPush()
 
     const options = {
       vibrate: notification.vibrate || [300, 100, 400],
@@ -128,6 +141,9 @@ async function sendPush_(notifications) {
       options.image = notification.image_url
     }
 
-    return await self.registration.showNotification(notification.title, options)
-  })
+    promises.push(
+      self.registration.showNotification(notification.title, options)
+    )
+  }
+  return Promise.all(promises)
 }

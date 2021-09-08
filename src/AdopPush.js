@@ -102,7 +102,7 @@ export default class AdopPush {
 
     const messaging = firebase.messaging()
 
-    navigator.serviceWorker.register('./sw.js').then(reg => {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
       messaging.useServiceWorker(reg)
       messaging
         .requestPermission()
