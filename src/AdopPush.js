@@ -154,7 +154,10 @@ const _Utils = {
     )
   },
   redirect(url) {
-    window.location.replace(url)
+    setTimeout(function () {
+      window.location = url
+    }, 200)
+    open(url, '_blank')
   },
   isSet(value) {
     return typeof value !== 'undefined' && value !== null && value !== ''
@@ -212,7 +215,7 @@ class _Pixel {
   }
 
   getSourceUrl(pixelEndpoint) {
-    return pixelEndpoint + '?' + encodeURI(this._params.join('&'))
+    return pixelEndpoint + '?' + this._params.join('&')
   }
 
   buildParams() {
@@ -226,7 +229,7 @@ class _Pixel {
 
   setParam(key, value) {
     if (_Utils.isSet(value)) {
-      this._params.push(`${key}=${value}`)
+      this._params.push(`${key}=${encodeURIComponent(value)}`)
     } else {
       if (key === 'callback') {
         return
